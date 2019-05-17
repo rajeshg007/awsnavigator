@@ -3,7 +3,14 @@ import boto3
 import sys
 import re
 import argparse
-
+import importlib
+from importlib.machinery import SourceFileLoader
+import traceback
+def get_related_object (SelectedService):
+	module = SourceFileLoader(SelectedService,"classes/%s.py" % (SelectedService)).load_module()
+	class_ = getattr(module, SelectedService)
+	instance = class_()
+	return instance
 
 SupportedServices = ['s3']
 SupportedCommands = ['list','open', 'cd', 'ls']
@@ -19,7 +26,7 @@ region = None
 
 def readInput(*args):
 	try:
-		input = ""
+		raw_input = ""
 
 		prompt = args[0]
 		commands = args[1]
@@ -28,22 +35,22 @@ def readInput(*args):
 		exp = re.compile(regExp)
 
 		while True:
-			input = raw_input(prompt)
-			input = input.strip()
+			raw_input = input(prompt)
+			raw_input = raw_input.strip()
 
-			if input == "":
-				print "Please enter a valid value from the list ("+", ".join(commands)+") :"
+			if raw_input == "":
+				print("Please enter a valid value from the list ("+", ".join(commands)+") :")
 				continue
 
-			words = re.split('\s+', input)
+			words = re.split('\s+', raw_input)
 
 			m = exp.search(words[0])
 
 			if m:
 				return words
 
-			if input != "":
-				print "Invalid input format: " + input
+			if raw_input != "":
+				print("Invalid input format: " + raw_input)
 
 	except Exception as e:
 		raise e
@@ -52,7 +59,7 @@ def listBuckets(session):
 	client = session.client('s3')
 	buckets = client.list_buckets()
 	for bucket in buckets['Buckets']:
-		print bucket['Name']
+		print(bucket['Name'])
 
 def isValidRegion(region, service):
 	if region in session.get_available_regions(service):
@@ -71,7 +78,7 @@ def main(args):
 		if session.region_name or args.region !='None':
 			pass
 		else:
-			print 'Please Update region in AWS Config or pass it as a Parameter to AWSNavigator'
+			print('Please Update region in AWS Config or pass it as a Parameter to AWSNavigator')
 			sys.exit()
 
 		region = session.region_name if args.region == 'None' else args.region
@@ -83,11 +90,12 @@ def main(args):
 				if isValidRegion(region,SelectedService):
 					pass
 				else:
-					print "${Service[0]} is not present in ${args.region}, defaulting to ${session.region_name}"
+					print("%s is not present in %s, defaulting to %s" % (Service[0],args.region,session.region_name))
 
-
-			readInput("/%s/%s" % (SelectedService, PresentPath), SupportedCommands)
-			print "hello"
+			module = get_related_object(SelectedService)
+			print(module.call())
+			readInput("/%s/%s :" % (SelectedService, PresentPath), SupportedCommands)
+			print("hello")
 			sys.exit()
 	except Exception as e:
 		raise e
@@ -103,4 +111,5 @@ try:
 		args = parser.parse_args()
 		main(args)
 except Exception as e:
-	print e
+	print(e)
+	traceback.print_tb(e.original.__traceback__)
