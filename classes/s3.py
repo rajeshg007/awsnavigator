@@ -52,22 +52,6 @@ class s3 (class_):
 			self.buckets.append(bucket['Name'])
 		self.bucketsFetched = True
 
-	def getFunction(self, command):
-		if len(self.presentPath) == 0:
-			function = self.emptyPathFunctions.get(command,'none')
-			return getattr(self, function)
-		else:
-			function = self.PathFunctions.get(command,'none')
-			return getattr(self, function)
-
-
-	def call(self,presentPath,params):
-		self.presentPath = presentPath
-		self.params = params
-		print(params)
-		function_ = self.getFunction(params[0])
-		function_()
-
 	def returnParams(self, param):
 		return getattr(self, param)
 
