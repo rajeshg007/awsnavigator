@@ -43,17 +43,11 @@ class s3 (class_):
 		except Exception as e:
 			raise e
 
-	def starterFunctions(self):
-		return True
-
 	def fetchBuckets(self):
 		buckets = self.client.list_buckets()
 		for bucket in buckets['Buckets']:
 			self.buckets.append(bucket['Name'])
 		self.bucketsFetched = True
-
-	def returnParams(self, param):
-		return getattr(self, param)
 
 	def supportedCommands(self):
 		if len(self.presentPath) == 0:

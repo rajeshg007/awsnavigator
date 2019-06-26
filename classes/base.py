@@ -14,7 +14,7 @@ class baseModule:
 		print(params)
 		function_ = self.getFunction(params[0])
 		function_()
-		
+
 	def getFunction(self, command):
 		if len(self.presentPath) == 0:
 			function = self.emptyPathFunctions.get(command,'none')
@@ -22,3 +22,12 @@ class baseModule:
 		else:
 			function = self.PathFunctions.get(command,'none')
 			return getattr(self, function)
+
+	def starterFunctions(self):
+		return True
+
+	def returnParams(self, param):
+		try:
+			return getattr(self, param)
+		except:
+			return False
