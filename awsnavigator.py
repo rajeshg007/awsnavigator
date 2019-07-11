@@ -6,7 +6,7 @@ import argparse
 from importlib.machinery import SourceFileLoader
 import traceback
 
-supportedServices = ['s3', 'ec2']
+supportedServices = ['s3', 'ec2', "elasticsearch"]
 selectedService = ''
 presentPath = []
 session = None
@@ -65,7 +65,11 @@ def change(words):
 		if selectedService == words[2]:
 			print("Already in Service")
 			return True
+		selectedService = words[2]
 		module = getRelatedObject(selectedService)
+		module.setup(session)
+		presentPath = []
+		region = words[2]
 	else:
 		print("Unknown command. Please try again")
 
@@ -141,7 +145,7 @@ try:
 			raise Exception("OS not Supported")
 		parser = argparse.ArgumentParser(description='AWS Navigator')
 		parser.add_argument('--profile', dest='profile',type=str,default='default',help='AWS Profile')
-		parser.add_argument('--region', dest='region',type=str,default='us-east-1',help='AWS Region Name')
+		parser.add_argument('--region', dest='region',type=str,default='ap-south-1',help='AWS Region Name')
 		args = parser.parse_args()
 		main(args)
 except Exception as e:

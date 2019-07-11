@@ -13,17 +13,46 @@ class ec2 (class_):
 
 	emptyPathFunctions = {
 		'list': 'listInstances',
+		'show': 'listInstances',
 		'ls': 'listInstances',
 		"open": "selectInstance",
-		"refresh": "reloadInstances"
+		"refresh": "reloadInstances",
+		"terminate": "terminateInstances"
 		}
 
 	PathFunctions = {
 			"show": "showProperty",
 			"close": "unSelectInstance",
 			"refresh": "reloadInstances",
-			"modify": "modifyParams"
+			"modify": "modifyParams",
+			"open": "openItems",
+			"terminate": "terminateInstances"
 		}
+	def terminateInstances(self):
+		if len(self.params) == 1 and self.returnParams("selectedInstance"):
+			self.client.terminate_instances(InstanceIds=[self.returnParams("selectedInstance")])
+			self.presentPath = []
+			del self.selectedInstance
+		elif len(self.params) > 1:
+			self.client.terminate_instances(InstanceIds=self.params[1:])
+			if self.returnParams("selectedInstance") in self.params[1:] or len(self.presentPath)>0:
+				self.presentPath = []
+				del self.selectedInstance
+		else:
+			print("Insufficient parameters for terminate command")
+
+
+	def openItems(self):
+		if len(self.params) > 1:
+			if self.params[1].startswith("sg-"):
+				self.openSG(self.params[1])
+		else:
+			print("unrecognized command")
+		pass
+
+	def openSG(self, sg):
+		self.sg = self.resource.SecurityGroup(sg)
+
 	def reloadInstances(self):
 		instances =  self.fetchInstances()
 		if len(self.presentPath) > 0:
@@ -73,16 +102,20 @@ class ec2 (class_):
 		self.instances = {}
 		for reservation in self.reservations:
 			for instance in reservation["Instances"]:
-				tags = instance['Tags']
-				tagkeys = []
-				tagvalues = []
-				for tag in tags:
-					tagkeys.append(tag["Key"].lower())
-					tagvalues.append(tag["Value"])
-				tags = dict(zip(tagkeys, tagvalues))
-				instance['Tags'] = tags
-				self.instances[instance["InstanceId"]] = instance
+				if 'Tags' in instance:
+					tags = instance['Tags']
+					tagkeys = []
+					tagvalues = []
+					for tag in tags:
+						tagkeys.append(tag["Key"].lower())
+						tagvalues.append(tag["Value"])
+					tags = dict(zip(tagkeys, tagvalues))
+					instance['Tags'] = tags
+					self.instances[instance["InstanceId"]] = instance
+				else:
+					print(instance)
 		return self.instances
+	
 	def getInstances(self):
 		instances = self.returnParams("instances")
 		if not instances:
@@ -96,7 +129,7 @@ class ec2 (class_):
 		for key, value in instances.items():
 			if len(self.params) > 1:
 				if self.matchInstance(value, self.params[1:]):
-					print(key+" "+ value["Tags"]["Name".lower()] if "Name".lower() in value["Tags"] else key)
+					print(key+" "+ value["Tags"]["Name".lower()] +" "+ value["State"]["Name"] if "Name".lower() in value["Tags"] else key +" "+ value["State"]["Name"])
 			else:
 				print(key+" "+ value["Tags"]["Name".lower()] if "Name".lower() in value["Tags"] else key)
 	

@@ -28,6 +28,6 @@ class baseModule:
 
 	def returnParams(self, param):
 		try:
-			return getattr(self, param)
+			return getattr(self, param, False)
 		except:
 			return False
