@@ -11,7 +11,7 @@ class s3 (class_):
 	presentPath = []
 	buckets = []
 	bucketsFetched = False
-	bucket = ''
+	selectedBucket = ''
 	items = []
 
 	emptyPathFunctions = {
@@ -31,7 +31,11 @@ class s3 (class_):
 	def openBucket(self):
 		try:
 			if self.params[1].count('/') == 0:
-				bucket = self.params[1]
+				if self.params[1] in self.fetchBuckets():
+					self.selectedBucket = self.params[1]
+					self.presentPath.append(self.params[1])
+				else:
+					print("%s bucket not found" % (self.params[1]))
 			else:
 				firstItem = self.params[1].find('/')
 				bucket = self.params[1][0:firstItem]
@@ -44,10 +48,12 @@ class s3 (class_):
 			raise e
 
 	def fetchBuckets(self):
-		buckets = self.client.list_buckets()
-		for bucket in buckets['Buckets']:
-			self.buckets.append(bucket['Name'])
-		self.bucketsFetched = True
+		if not self.bucketsFetched:
+			buckets = self.client.list_buckets()
+			for bucket in buckets['Buckets']:
+				self.buckets.append(bucket['Name'])
+			self.bucketsFetched = True
+		return self.buckets
 
 	def supportedCommands(self):
 		if len(self.presentPath) == 0:
@@ -68,22 +74,25 @@ class s3 (class_):
 				self.presentPath = []
 			elif self.params[1].count('/') > 0:
 				items = re.split('/',self.params[1])
+				items = [item for item in items if item !=""]
 				for item in items:
-					if self.verifyPath(item):
+					if self.verifyFolderPath(item):
 						self.presentPath.append(item)
+						self.printPathItems()
+						self.listObjects()
 					else:
 						print("Path not found after s3://"+"/".join(self.presentPath))
 			else:
-				if self.verifyPath(self.params[1]):
+				if self.verifyFolderPath(self.params[1]):
 					self.presentPath.append(self.params[1])
+					self.listObjects()
 				else:
 					print("Path not found after s3://"+"/".join(self.presentPath))
 		
-		if self.bucket == "" and len(self.presentPath) > 0:
-			self.bucket = self.presentPath[0]
+		if self.selectedBucket == "" and len(self.presentPath) > 0:
+			self.selectedBucket = self.presentPath[0]
 		if len(self.presentPath) == 0:
-			self.bucket = ""
-
+			self.selectedBucket = ""
 
 	def listObjects(self):
 		command = "aws s3 ls s3://"+"/".join(self.presentPath)+"/"
@@ -92,17 +101,17 @@ class s3 (class_):
 			print(item.strip())
 		# output = [item.strip() for item in output]
 
-	def verifyPath(self, item):
-		command = "aws s3 ls s3://"+"/".join(self.presentPath+[item])
+	def verifyFolderPath(self, item):
+		command = "aws s3 ls s3://"+"/".join(self.presentPath+[item]) + "/"
 		output = os.popen(command).read()
-		print(output)
 		if output != "":
 			return True
 		else:
 			return False
+
 	def listBuckets(self):
-		self.fetchBuckets()
-		for bucket in self.buckets:
+		buckets = self.fetchBuckets()
+		for bucket in buckets:
 			print(bucket)
 
 	def getBucketRegion(self):
