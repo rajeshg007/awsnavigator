@@ -6,7 +6,10 @@ class baseModule:
 		self.starterFunctions()
 
 	def getServiceName(self):
-		return self.moduleName
+		if self.returnParams("serviceName"):
+			return self.serviceName
+		else:
+			return self.moduleName
 	
 	def call(self,presentPath,params):
 		self.presentPath = presentPath

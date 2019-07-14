@@ -7,15 +7,25 @@ class_ = getattr(module, 'baseModule')
 
 class elasticsearch (class_):
 	moduleName = 'es'
+	serviceName = 'elasticsearch'
 	selectedService = 'elasticsearch'
 	presentPath = []
 	emptyPathFunctions = {
 		'list': 'listDomains',
 		"refresh": "reloadDomains",
+		"open": "selectDomain",
 		}
+
 	PathFunctions = {
 		"refresh": "reloadDomains",
 		}
+
+	def selectDomain(self):
+		domains = self.fetchDomains()
+		if self.params[1] in domains.keys():
+			self.presentPath = [self.params[1]]
+		else:
+			print("Domain not found")
 
 	def listDomains(self):
 		domains = self.fetchDomains()

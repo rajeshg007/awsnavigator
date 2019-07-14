@@ -82,7 +82,8 @@ def getRelatedObject (selectedService):
 	return instance
 
 def isValidRegion(region, service):
-	if region in session.get_available_regions(service):
+	module = getRelatedObject(service)
+	if region in session.get_available_regions(module.moduleName):
 		return True
 	else:
 		return False
