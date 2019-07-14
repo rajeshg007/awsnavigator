@@ -64,12 +64,6 @@ class ec2 (class_):
 		self.presentPath = []
 		del self.selectedInstance
 
-	def supportedCommands(self):
-		if len(self.presentPath) == 0:
-			return list(self.emptyPathFunctions.keys())
-		else:
-			return list(self.PathFunctions.keys())
-
 	def selectInstance(self):
 		instances = self.getInstances()
 		if self.params[1] in self.instances.keys():

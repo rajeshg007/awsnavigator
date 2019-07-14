@@ -55,12 +55,6 @@ class s3 (class_):
 			self.bucketsFetched = True
 		return self.buckets
 
-	def supportedCommands(self):
-		if len(self.presentPath) == 0:
-			return list(self.emptyPathFunctions.keys())
-		else:
-			return list(self.PathFunctions.keys())
-
 	def changePath (self):
 		if len(self.params) >= 2:
 			if self.params[1] == '..':

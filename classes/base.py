@@ -31,3 +31,9 @@ class baseModule:
 			return getattr(self, param, False)
 		except:
 			return False
+
+	def supportedCommands(self):
+		if len(self.presentPath) == 0:
+			return list(self.emptyPathFunctions.keys())
+		else:
+			return list(self.PathFunctions.keys())
