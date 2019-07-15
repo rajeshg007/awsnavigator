@@ -78,7 +78,7 @@ class ec2 (class_):
 	def showProperty(self):
 		main = self.getInstance(self.selectedInstance)
 		if len(self.params) == 1:
-			print([key for key in main.keys()])
+			print("Available properties : "+", ".join([key for key in main.keys()]))
 		else:
 			propertythread = self.params[1].split("/")
 			for item in propertythread:
