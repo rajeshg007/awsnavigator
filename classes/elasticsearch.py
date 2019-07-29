@@ -20,7 +20,27 @@ class elasticsearch (class_):
 		"refresh": "reloadDomains",
 		"close": "unSelectDomain",
 		"show": "showProperty",
+		"update": "updateProperty"
 		}
+	def updateProperty(self):
+		if len(self.params) <= 1:
+			print("Insufficient parameters")
+		else:
+			params = self.params[1].split(":")
+			esConfig = {}
+			if len(params) > 1:
+				if params[0].lower() ==  "instancetype":
+					esConfig["InstanceType"] = str(params[1])
+					self.client.update_elasticsearch_domain_config(
+						DomainName=self.presentPath[0],
+						ElasticsearchClusterConfig=esConfig
+					)
+				elif params[0].lower() ==  "instancecount" and int(params[1].strip()):
+					esConfig["InstanceCount"] = int(params[1])
+					self.client.update_elasticsearch_domain_config(
+						DomainName=self.presentPath[0],
+						ElasticsearchClusterConfig=esConfig
+					)
 
 	def showProperty(self):
 		main = self.getDomain(self.presentPath[0])

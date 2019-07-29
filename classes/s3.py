@@ -72,7 +72,7 @@ class s3 (class_):
 				for item in items:
 					if self.verifyFolderPath(item):
 						self.presentPath.append(item)
-						self.printPathItems()
+						# self.printPathItems()
 						self.listObjects()
 					else:
 						print("Path not found after s3://"+"/".join(self.presentPath))

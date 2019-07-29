@@ -40,3 +40,10 @@ class baseModule:
 			return list(self.emptyPathFunctions.keys())
 		else:
 			return list(self.PathFunctions.keys())
+	def isTypeCastable(self,var1, var2):
+		try:
+			type(var1)(var2)
+			return True
+		except:
+			return False
+		

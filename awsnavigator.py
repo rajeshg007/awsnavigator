@@ -6,12 +6,13 @@ import argparse
 from importlib.machinery import SourceFileLoader
 import traceback
 
-supportedServices = ['s3', 'ec2', "elasticsearch"]
+supportedServices = ['s3', 'ec2', "elasticsearch", "asg"]
 selectedService = ''
 presentPath = []
 session = None
 region = None
 module = None
+profile = None
 systemCommands = ["exit", "change"]
 def readInput(*args):
 	try:
@@ -51,6 +52,8 @@ def change(words):
 	global selectedService
 	global presentPath
 	global module
+	global profile
+
 	if len(words) >= 3 and words[1] == "region":
 		if words[2] == region:
 			print("Already Present in "+ words[2])
@@ -62,14 +65,23 @@ def change(words):
 		presentPath = []
 		region = words[2]
 	elif len(words) >= 3 and words[1] == "service":
-		if selectedService == words[2]:
-			print("Already in Service")
-			return True
+		# if selectedService == words[2]:
+		# 	print("Already in Service")
+		# 	return True
 		selectedService = words[2]
 		module = getRelatedObject(selectedService)
 		module.setup(session)
 		presentPath = []
 		region = words[2]
+	elif len(words) >= 3 and words[1] == "profile":
+		if profile == words[2]:
+			print("Already in profile")
+			return True
+		session = boto3.Session(profile_name=words[2], region_name=region)
+		profile = words[2]
+		module = getRelatedObject(selectedService)
+		module.setup(session)
+		presentPath = []
 	else:
 		print("Unknown command. Please try again")
 
@@ -94,9 +106,10 @@ def main(args):
 	global selectedService
 	global presentPath
 	global module
+	global profile
 
 	try:
-
+		profile = args.profile
 		session = boto3.Session(profile_name=args.profile, region_name=args.region)
 
 		if session.region_name or args.region !='':

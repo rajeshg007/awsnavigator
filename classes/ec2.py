@@ -26,14 +26,20 @@ class ec2 (class_):
 			"refresh": "reloadInstances",
 			"modify": "modifyParams",
 			"open": "openItems",
-			"terminate": "terminateInstances"
+			"terminate": "terminateInstances",
+			"forceterminate": "forceTerminateInstance"
 		}
+
+	def modifyParams(self):
+		if len(self.params) > 1:
+			params = self.params[1].split(":")
+			
 	def terminateInstances(self):
 		if len(self.params) == 1 and self.returnParams("selectedInstance"):
 			self.client.terminate_instances(InstanceIds=[self.returnParams("selectedInstance")])
 			self.presentPath = []
 			del self.selectedInstance
-		elif len(self.params) > 1:
+		elif len(self.params) > 1 and not self.returnParams("selectedInstance"):
 			self.client.terminate_instances(InstanceIds=self.params[1:])
 			if self.returnParams("selectedInstance") in self.params[1:] or len(self.presentPath)>0:
 				self.presentPath = []
@@ -41,6 +47,14 @@ class ec2 (class_):
 		else:
 			print("Insufficient parameters for terminate command")
 
+	def forceTerminateInstance(self):
+		if len(self.params) == 1 and self.returnParams("selectedInstance"):
+			self.client.modify_instance_attribute(InstanceId=self.returnParams("selectedInstance"), DisableApiTermination={'Value': False })
+			self.client.terminate_instances(InstanceIds=[self.returnParams("selectedInstance")])
+			self.presentPath = []
+			del self.selectedInstance
+		else:
+			print("Wrong parameters for Force Terminate command")
 
 	def openItems(self):
 		if len(self.params) > 1:
@@ -123,9 +137,9 @@ class ec2 (class_):
 		for key, value in instances.items():
 			if len(self.params) > 1:
 				if self.matchInstance(value, self.params[1:]):
-					print(key+" "+ value["Tags"]["Name".lower()] +" "+ value["State"]["Name"] if "Name".lower() in value["Tags"] else key +" "+ value["State"]["Name"])
+					print(key+" "+ (value["Tags"]["Name".lower()] if "Name".lower() in value["Tags"] else key) +" "+ value["State"]["Name"]+" "+ (value["PublicIpAddress"] if "PublicIpAddress" in value.keys() else "") + " " + (value["PrivateIpAddress"] if "PrivateIpAddress" in value.keys() else ""))
 			else:
-				print(key+" "+ value["Tags"]["Name".lower()] if "Name".lower() in value["Tags"] else key)
+				print(key+" "+ (value["Tags"]["Name".lower()] if "Name".lower() in value["Tags"] else key) +" "+ value["State"]["Name"]+" "+ (value["PublicIpAddress"] if "PublicIpAddress" in value.keys() else "") + " " + (value["PrivateIpAddress"] if "PrivateIpAddress" in value.keys() else ""))
 	
 	def matchInstance(self, instance, params):
 		params = self.params[1:]
@@ -135,5 +149,8 @@ class ec2 (class_):
 				if splitParams[1].lower() in instance["Tags"].keys():
 					if instance["Tags"][splitParams[1]] == splitParams[2]:
 						return True
+			else:
+				if instance[splitParams[0]] == splitParams[1]:
+					return True
 			return False
 		return False
