@@ -7,7 +7,7 @@ class_ = getattr(module, 'baseModule')
 
 class s3 (class_):
 	moduleName = 's3'
-	selectedService = 's3'
+	serviceName = 's3'
 	presentPath = []
 	buckets = []
 	bucketsFetched = False

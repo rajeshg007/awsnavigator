@@ -1,7 +1,7 @@
 from importlib.machinery import SourceFileLoader
 import re
 import os
-
+import json
 module = SourceFileLoader("","classes/base.py").load_module()
 class_ = getattr(module, 'baseModule')
 
@@ -28,8 +28,11 @@ class asg (class_):
 	def reloadASGs(self):
 		instances =  self.fetchASG()
 		if len(self.presentPath) > 0:
-			print("previously selected instance is : "+ self.selectedInstance)
+			print("previously selected asg was : "+ self.presentPath[0])
+			print("Trying to open it again")
+		self.params = ["open", self.presentPath[0]]
 		self.presentPath = []
+		self.openASG()		
 
 	def openASG(self):
 		if len(self.params) <= 1:
@@ -77,7 +80,7 @@ class asg (class_):
 					if item.lower() == key.lower():
 						main = main[key]
 						break
-			print(main)
+			print(json.dumps(main))
 			
 	def listASG(self):
 		asgs = self.fetchASG()

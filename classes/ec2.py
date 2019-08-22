@@ -8,6 +8,7 @@ class_ = getattr(module, 'baseModule')
 class ec2 (class_):
 	moduleName = 'ec2'
 	selectedService = 'ec2'
+	serviceName = 'ec2'
 	presentPath = []
 	items = []
 
@@ -137,20 +138,24 @@ class ec2 (class_):
 		for key, value in instances.items():
 			if len(self.params) > 1:
 				if self.matchInstance(value, self.params[1:]):
-					print(key+" "+ (value["Tags"]["Name".lower()] if "Name".lower() in value["Tags"] else key) +" "+ value["State"]["Name"]+" "+ (value["PublicIpAddress"] if "PublicIpAddress" in value.keys() else "") + " " + (value["PrivateIpAddress"] if "PrivateIpAddress" in value.keys() else ""))
+					print(key+" "+ (value["Tags"]["Name".lower()] if "Name".lower() in value["Tags"] else key) +" "+ value["State"]["Name"]+" "+ (value["PublicIpAddress"] if "PublicIpAddress" in value.keys() else "") + " " + (value["PrivateIpAddress"] if "PrivateIpAddress" in value.keys() else "")+ " " + (str(value["LaunchTime"]) if "LaunchTime" in value.keys() else ""))
 			else:
 				print(key+" "+ (value["Tags"]["Name".lower()] if "Name".lower() in value["Tags"] else key) +" "+ value["State"]["Name"]+" "+ (value["PublicIpAddress"] if "PublicIpAddress" in value.keys() else "") + " " + (value["PrivateIpAddress"] if "PrivateIpAddress" in value.keys() else ""))
 	
 	def matchInstance(self, instance, params):
 		params = self.params[1:]
+		retVal = False
 		for param in params:
 			splitParams = param.split(":")
 			if splitParams[0] == "tag":
 				if splitParams[1].lower() in instance["Tags"].keys():
 					if instance["Tags"][splitParams[1]] == splitParams[2]:
-						return True
+						retVal = True
+					else:
+						return False
 			else:
 				if instance[splitParams[0]] == splitParams[1]:
-					return True
-			return False
-		return False
+					retVal = True
+				else:
+					return False
+		return retVal

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 import boto3
 import sys
 import re
@@ -68,11 +68,14 @@ def change(words):
 		# if selectedService == words[2]:
 		# 	print("Already in Service")
 		# 	return True
-		selectedService = words[2]
-		module = getRelatedObject(selectedService)
-		module.setup(session)
-		presentPath = []
-		region = words[2]
+		if words[2] in supportedServices:
+			selectedService = words[2]
+			module = getRelatedObject(selectedService)
+			module.setup(session)
+			presentPath = []
+			region = words[2]
+		else:
+			print("unknown Service please use "+",".join(supportedServices))
 	elif len(words) >= 3 and words[1] == "profile":
 		if profile == words[2]:
 			print("Already in profile")
@@ -88,8 +91,11 @@ def change(words):
 
 
 def getRelatedObject (selectedService):
-	module = SourceFileLoader(selectedService,"classes/%s.py" % (selectedService)).load_module()
-	class_ = getattr(module, selectedService)
+	try:
+		module = SourceFileLoader(selectedService,"classes/%s.py" % (selectedService)).load_module()
+		class_ = getattr(module, selectedService)
+	except Exception as e:
+		print(e)
 	instance = class_()
 	return instance
 
@@ -146,7 +152,7 @@ def main(args):
 				try:
 					module.call(presentPath,params)
 					presentPath = module.returnParams('presentPath')
-					selectedService = module.returnParams('selectedService')
+					selectedService = module.returnParams('serviceName')
 				except Exception as e:
 					print(e)
 
