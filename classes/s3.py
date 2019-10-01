@@ -113,7 +113,10 @@ class s3 (class_):
 
 	def preSign(self):
 		if len(self.params) > 1:
-			command = "aws s3 presign "+"/".join(self.presentPath)+"/"+self.params[1] + " --region " + self.resource.meta.client.get_bucket_location(Bucket=self.bucket)["LocationConstraint"]
+			print(self.selectedBucket)
+			print(self.resource.meta.client.get_bucket_location(Bucket=self.selectedBucket))
+			command = "aws s3 presign "+"/".join(self.presentPath)+"/"+self.params[1] + " --region " + self.resource.meta.client.get_bucket_location(Bucket=self.selectedBucket)["LocationConstraint"]
+			print(command)
 			output = os.popen(command).read()
 			print(output)
 		else:
