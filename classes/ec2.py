@@ -120,9 +120,7 @@ class ec2 (class_):
 						tagvalues.append(tag["Value"])
 					tags = dict(zip(tagkeys, tagvalues))
 					instance['Tags'] = tags
-					self.instances[instance["InstanceId"]] = instance
-				else:
-					print(instance)
+				self.instances[instance["InstanceId"]] = instance
 		return self.instances
 	
 	def getInstances(self):
@@ -133,14 +131,12 @@ class ec2 (class_):
 
 	def listInstances(self):
 		instances = self.getInstances()
-		if not instances:
-			instances = self.fetchInstances()
 		for key, value in instances.items():
 			if len(self.params) > 1:
 				if self.matchInstance(value, self.params[1:]):
 					print(key+" "+ (value["Tags"]["Name".lower()] if "Name".lower() in value["Tags"] else key) +" "+ value["State"]["Name"]+" "+ (value["PublicIpAddress"] if "PublicIpAddress" in value.keys() else "") + " " + (value["PrivateIpAddress"] if "PrivateIpAddress" in value.keys() else "")+ " " + (str(value["LaunchTime"]) if "LaunchTime" in value.keys() else ""))
 			else:
-				print(key+" "+ (value["Tags"]["Name".lower()] if "Name".lower() in value["Tags"] else key) +" "+ value["State"]["Name"]+" "+ (value["PublicIpAddress"] if "PublicIpAddress" in value.keys() else "") + " " + (value["PrivateIpAddress"] if "PrivateIpAddress" in value.keys() else ""))
+				print(key+" "+ (value["Tags"]["Name".lower()] if "Tags" in value and "Name".lower() in value["Tags"] else key) +" "+ value["State"]["Name"]+" "+ (value["PublicIpAddress"] if "PublicIpAddress" in value.keys() else "") + " " + (value["PrivateIpAddress"] if "PrivateIpAddress" in value.keys() else ""))
 	
 	def matchInstance(self, instance, params):
 		params = self.params[1:]
