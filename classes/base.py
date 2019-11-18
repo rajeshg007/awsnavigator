@@ -1,3 +1,5 @@
+import json
+import datetime
 class baseModule:
 
 	def setup(self, session):
@@ -46,4 +48,13 @@ class baseModule:
 			return True
 		except:
 			return False
-		
+	def dateSerialization(self,o):
+		if isinstance(o, datetime.datetime):
+			return {"type":"date","value":o.__str__()}
+
+	def printItem(self):
+		for param in self.params:
+			print(param)
+			print("-"*25)
+			print(json.dumps(self.returnParams(param), default = self.dateSerialization))
+			print("-"*25)

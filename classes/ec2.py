@@ -1,6 +1,7 @@
 from importlib.machinery import SourceFileLoader
 import re
 import os
+from functools import reduce
 
 module = SourceFileLoader("","classes/base.py").load_module()
 class_ = getattr(module, 'baseModule')
@@ -18,7 +19,9 @@ class ec2 (class_):
 		'ls': 'listInstances',
 		"open": "selectInstance",
 		"refresh": "reloadInstances",
-		"terminate": "terminateInstances"
+		"terminate": "terminateInstances",
+		"stats": "getInstanceStats",
+		"print": "printItem"
 		}
 
 	PathFunctions = {
@@ -30,6 +33,10 @@ class ec2 (class_):
 			"terminate": "terminateInstances",
 			"forceterminate": "forceTerminateInstance"
 		}
+
+	def getInstanceStats(self):
+		instances = self.getInstances()
+		print("Instance Count = "+str(len(instances)))
 
 	def modifyParams(self):
 		if len(self.params) > 1:

@@ -165,7 +165,7 @@ try:
 			raise Exception("OS not Supported")
 		parser = argparse.ArgumentParser(description='AWS Navigator')
 		parser.add_argument('--profile', dest='profile',type=str,default='default',help='AWS Profile')
-		parser.add_argument('--region', dest='region',type=str,default='ap-south-1',help='AWS Region Name')
+		parser.add_argument('--region', dest='region',type=str,default='us-west-2',help='AWS Region Name')
 		args = parser.parse_args()
 		main(args)
 except Exception as e:
