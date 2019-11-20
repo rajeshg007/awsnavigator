@@ -2,6 +2,7 @@ from importlib.machinery import SourceFileLoader
 import re
 import os
 from functools import reduce
+import numpy
 
 module = SourceFileLoader("","classes/base.py").load_module()
 class_ = getattr(module, 'baseModule')
@@ -21,7 +22,8 @@ class ec2 (class_):
 		"refresh": "reloadInstances",
 		"terminate": "terminateInstances",
 		"stats": "getInstanceStats",
-		"print": "printItem"
+		"print": "printItem",
+		"price": "pricing"
 		}
 
 	PathFunctions = {
@@ -34,9 +36,26 @@ class ec2 (class_):
 			"forceterminate": "forceTerminateInstance"
 		}
 
+	def pricing(self):
+		print("under construction")
+
 	def getInstanceStats(self):
 		instances = self.getInstances()
-		print("Instance Count = "+str(len(instances)))
+		instances = list(instances.values())[0:len(instances)]
+		print("Total Instance Count = "+str(len(instances)))
+		print("-"*10+"LifeCycleType"+"-"*10)
+		types = list(map((lambda x: x["InstanceLifecycle"] if "InstanceLifecycle" in x else "OnDemand"), instances))
+		unique, counts = numpy.unique(types, return_counts=True)
+		lifeCycleTypes = dict(zip(unique, counts))
+		for key in lifeCycleTypes.keys():
+			print(f"Total {key} Instances: {lifeCycleTypes[key]}")
+		print("-"*10+"InstanceType"+"-"*10)
+		types = list(map((lambda x: x["InstanceType"]), instances))
+		unique, counts = numpy.unique(types, return_counts=True)
+		instanceTypeCounts = dict(zip(unique, counts))
+		for key in instanceTypeCounts.keys():
+			print(f"Total {key} Instances: {instanceTypeCounts[key]}")
+
 
 	def modifyParams(self):
 		if len(self.params) > 1:
@@ -157,7 +176,7 @@ class ec2 (class_):
 					else:
 						return False
 			else:
-				if instance[splitParams[0]] == splitParams[1]:
+				if splitParams[0] in instance and instance[splitParams[0]] == splitParams[1]:
 					retVal = True
 				else:
 					return False
