@@ -36,8 +36,20 @@ class ec2 (class_):
 			"forceterminate": "forceTerminateInstance"
 		}
 
+	def starterFunctions(self):
+		self.region = self.client.meta.region_name
+		self.zones = list(map((lambda x: x["ZoneName"]), self.client.describe_availability_zones()['AvailabilityZones']))
+
 	def pricing(self):
-		print("under construction")
+		if len(self.params) <= 2 or len(self.params) > 3:
+			print("Wrong Usage")
+			print("Usage: price <lifecycle type> <instance type>")
+		else:
+			if self.params[1] != 'spot':
+				print("under construction please try sometime later")
+			else:
+				response = self.client.describe_spot_price_history(
+					InstanceTypes=[self.params[2]],MaxResults=1)
 
 	def getInstanceStats(self):
 		instances = self.getInstances()
@@ -84,15 +96,21 @@ class ec2 (class_):
 			print("Wrong parameters for Force Terminate command")
 
 	def openItems(self):
-		if len(self.params) > 1:
-			if self.params[1].startswith("sg-"):
+		if len(self.params) == 2 :
+			if self.params[1].startswith("sg-") and self.params[1] in self.getInstance(self.selectedInstance)["sg"].values():
 				self.openSG(self.params[1])
+			else:
+				print("something is wrong")
 		else:
 			print("unrecognized command")
 		pass
 
 	def openSG(self, sg):
+		if sg in self.getInstance(self.selectedInstance)["sg"].keys():
+			sg = self.getInstance(self.selectedInstance)["sg"][sg]
 		self.sg = self.resource.SecurityGroup(sg)
+		self.presentPath.append(sg)
+		print(self.presentPath)
 
 	def reloadInstances(self):
 		instances =  self.fetchInstances()
@@ -133,7 +151,7 @@ class ec2 (class_):
 			print(main)
 
 	def fetchInstances(self):
-		self.reservations = self.client.describe_instances()["Reservations"]
+		self.reservations = self.client.describe_instances(Filters=[{"Name":"instance-state-name","Values":['pending','running','stopped']}])["Reservations"]
 		self.instances = {}
 		for reservation in self.reservations:
 			for instance in reservation["Instances"]:
@@ -146,6 +164,9 @@ class ec2 (class_):
 						tagvalues.append(tag["Value"])
 					tags = dict(zip(tagkeys, tagvalues))
 					instance['Tags'] = tags
+					instance["sg"] = {}
+					for sg in instance["SecurityGroups"]:
+						instance["sg"][sg["GroupName"]] = sg["GroupId"]
 				self.instances[instance["InstanceId"]] = instance
 		return self.instances
 	
