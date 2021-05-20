@@ -33,7 +33,8 @@ class ec2 (class_):
 			"modify": "modifyParams",
 			"open": "openItems",
 			"terminate": "terminateInstances",
-			"forceterminate": "forceTerminateInstance"
+			"forceterminate": "forceTerminateInstance",
+			"restart": "restart"
 		}
 
 	def starterFunctions(self):
@@ -149,6 +150,11 @@ class ec2 (class_):
 						main = main[key]
 						break
 			print(main)
+
+	def restart(self):
+		output = self.client.reboot_instances(InstanceIds= [self.selectedInstance])
+		print(output)
+
 
 	def fetchInstances(self):
 		self.reservations = self.client.describe_instances(Filters=[{"Name":"instance-state-name","Values":['pending','running','stopped']}])["Reservations"]
